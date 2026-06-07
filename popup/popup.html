@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volume Booster</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <span class="logo">🔊</span>
+        <span class="title">Volume Booster</span>
+      </div>
+      <span class="badge">FREE</span>
+    </div>
+
+    <!-- Volume Display -->
+    <div class="volume-display">
+      <span class="volume-number" id="volumeDisplay">100</span>
+      <span class="volume-unit">%</span>
+    </div>
+
+    <div class="volume-label" id="volumeLabel">Normal volume</div>
+
+    <!-- Slider -->
+    <div class="slider-wrap">
+      <input
+        type="range"
+        id="volumeSlider"
+        min="100"
+        max="600"
+        value="100"
+        step="10"
+      />
+      <div class="slider-labels">
+        <span>100%</span>
+        <span>300%</span>
+        <span>600%</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <button class="reset-btn" id="resetBtn">↺ Reset to Normal</button>
+
+    <!-- Status -->
+    <div class="status" id="status"></div>
+
+    <!-- Pro Banner -->
+    <div class="pro-banner">
+      <div class="pro-features">
+        ✨ Pro coming soon: per-site memory, EQ presets, bass boost
+      </div>
+      <a
+        href="https://forms.gle/SnJJjoKvjUnRbg347"
+        target="_blank"
+        class="upgrade-btn"
+        id="upgradeBtn"
+      >
+        Join Waitlist — Free
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      ✓ No adware &nbsp;·&nbsp; ✓ No tracking &nbsp;·&nbsp; ✓ 100% local
+    </div>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

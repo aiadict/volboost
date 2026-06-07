@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate Volume Booster Icons</title>
+  <style>
+    body { font-family: sans-serif; padding: 32px; background: #111; color: #eee; }
+    h2 { margin-bottom: 8px; }
+    p { color: #aaa; margin-bottom: 24px; font-size: 14px; }
+    button {
+      padding: 12px 28px;
+      background: #8b7aff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: #7a6ae0; }
+    #previews { margin-top: 28px; display: flex; gap: 24px; align-items: flex-end; }
+    .preview-item { text-align: center; }
+    .preview-item span { display: block; color: #666; font-size: 11px; margin-top: 6px; }
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+  <h2>🔊 Volume Booster — Icon Generator</h2>
+  <p>
+    Click the button below. Four PNG icon files will be downloaded automatically.<br/>
+    Move them into the <strong>icons/</strong> folder of the project.
+  </p>
+  <button onclick="generateAll()">Generate &amp; Download Icons</button>
+
+  <div id="previews"></div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const SIZES = [16, 32, 48, 128];
+
+    function drawIcon(canvas, size) {
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Background — rounded rectangle
+      const radius = size * 0.22;
+      ctx.fillStyle = '#0f0f14';
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const unit = size * 0.09;
+
+      ctx.fillStyle = '#8b7aff';
+
+      // Speaker body (rectangle)
+      const bx = cx - unit * 3;
+      const by = cy - unit * 1.4;
+      const bw = unit * 1.6;
+      const bh = unit * 2.8;
+      ctx.fillRect(bx, by, bw, bh);
+
+      // Speaker cone (triangle pointing right)
+      ctx.beginPath();
+      ctx.moveTo(bx + bw, by);
+      ctx.lineTo(cx + unit * 1.1, cy - unit * 2.5);
+      ctx.lineTo(cx + unit * 1.1, cy + unit * 2.5);
+      ctx.lineTo(bx + bw, by + bh);
+      ctx.closePath();
+      ctx.fill();
+
+      // Sound waves (only for sizes >= 32)
+      if (size >= 32) {
+        ctx.strokeStyle = '#8b7aff';
+        ctx.lineCap = 'round';
+
+        // Wave 1
+        ctx.lineWidth = unit * 0.7;
+        ctx.beginPath();
+        ctx.arc(cx + unit * 1.1, cy, unit * 1.8, -Math.PI * 0.38, Math.PI * 0.38);
+        ctx.stroke();
+
+        // Wave 2 (only for 48+)
+        if (size >= 48) {
+          ctx.lineWidth = unit * 0.6;
+          ctx.beginPath();
+          ctx.arc(cx + unit * 1.1, cy, unit * 2.9, -Math.PI * 0.38, Math.PI * 0.38);
+          ctx.stroke();
+        }
+
+        // Wave 3 (only for 128)
+        if (size >= 128) {
+          ctx.lineWidth = unit * 0.5;
+          ctx.beginPath();
+          ctx.arc(cx + unit * 1.1, cy, unit * 4.1, -Math.PI * 0.38, Math.PI * 0.38);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function generateAll() {
+      const canvas = document.getElementById('canvas');
+      const previews = document.getElementById('previews');
+      previews.innerHTML = '';
+
+      SIZES.forEach(size => {
+        drawIcon(canvas, size);
+
+        // Preview
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.width = size;
+        previewCanvas.height = size;
+        previewCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        const wrap = document.createElement('div');
+        wrap.className = 'preview-item';
+        wrap.appendChild(previewCanvas);
+        const lbl = document.createElement('span');
+        lbl.textContent = `${size}×${size}`;
+        wrap.appendChild(lbl);
+        previews.appendChild(wrap);
+
+        // Download
+        const link = document.createElement('a');
+        link.download = `icon${size}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
