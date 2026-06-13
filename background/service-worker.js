@@ -81,6 +81,10 @@ async function startCapture(tabId, gain) {
   capturedTabId = tabId;
   chrome.storage.session.set({ capturedTabId: tabId }).catch(() => {});
   await chrome.runtime.sendMessage({ target: 'offscreen', type: 'START_CAPTURE', streamId, gain });
+  chrome.scripting.executeScript({
+    target: { tabId },
+    files: ['content/fullscreen-bridge.js'],
+  }).catch(() => {});
 }
 
 async function releaseExistingCapture() {
