@@ -20,7 +20,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
 // ─── Messages from popup ──────────────────────────────────────────────────────
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'BOOST') {
     handleBoost(msg.tabId, msg.gain)
       .then(() => sendResponse({ ok: true }))
@@ -33,6 +33,35 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       .then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
     return true;
+  }
+
+  // ─── Fullscreen bridge (content script on YouTube) ─────────────────────────
+
+  if (msg.type === 'IS_BOOST_ACTIVE') {
+    sendResponse({ active: capturedTabId !== null && capturedTabId === sender.tab?.id });
+    return;
+  }
+
+  if (msg.type === 'RELEASE_FOR_FULLSCREEN') {
+    releaseExistingCapture()
+      .then(() => sendResponse({ ok: true }))
+      .catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+
+  if (msg.type === 'RESTORE_AFTER_FULLSCREEN') {
+    const tabId = sender.tab?.id;
+    if (tabId) {
+      chrome.storage.local.get(`vb_${tabId}`)
+        .then(data => {
+          const pct = data[`vb_${tabId}`] ?? 150;
+          return handleBoost(tabId, pct / 100);
+        })
+        .then(() => sendResponse({ ok: true }))
+        .catch(() => sendResponse({ ok: false }));
+      return true;
+    }
+    sendResponse({ ok: false });
   }
 });
 
