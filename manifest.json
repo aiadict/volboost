@@ -7,7 +7,8 @@
     "activeTab",
     "storage",
     "tabCapture",
-    "offscreen"
+    "offscreen",
+    "windows"
   ],
   "action": {
     "default_popup": "popup/popup.html",
@@ -26,6 +27,11 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["content/youtube-boost.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/fullscreen-bridge.js"],
       "run_at": "document_idle"
     }
   ],

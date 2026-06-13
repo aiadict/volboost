@@ -1,7 +1,9 @@
 'use strict';
 
-let capturedTabId = null; // Tab using tabCapture
-let ytBoostTabId = null;  // Tab using YouTube content-script boost
+let capturedTabId = null;    // Tab using tabCapture
+let ytBoostTabId = null;     // Tab using YouTube content-script boost
+let fsWindowId = null;       // Window we put into fullscreen for the bridge
+let fsPrevState = null;      // Window state to restore when fullscreen exits
 
 // Restore capturedTabId across service worker restarts.
 (async () => {
@@ -21,7 +23,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
 // ─── Messages ─────────────────────────────────────────────────────────────────
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'BOOST') {
     handleBoost(msg.tabId, msg.gain)
       .then(() => sendResponse({ ok: true }))
@@ -34,6 +36,38 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       .then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
     return true;
+  }
+
+  // ─── Fullscreen bridge (content script on tabCapture sites) ───────────────
+
+  if (msg.type === 'IS_BOOST_ACTIVE') {
+    sendResponse({ active: capturedTabId !== null && capturedTabId === sender.tab?.id });
+    return;
+  }
+
+  if (msg.type === 'FULLSCREEN_ENTER') {
+    const windowId = sender.tab?.windowId;
+    if (windowId) {
+      chrome.windows.get(windowId)
+        .then(win => {
+          fsPrevState = win.state;
+          fsWindowId = windowId;
+          return chrome.windows.update(windowId, { state: 'fullscreen' });
+        })
+        .then(() => sendResponse({ ok: true }))
+        .catch(() => sendResponse({ ok: false }));
+      return true;
+    }
+    sendResponse({ ok: false });
+  }
+
+  if (msg.type === 'FULLSCREEN_EXIT') {
+    if (fsWindowId && fsPrevState && fsPrevState !== 'fullscreen') {
+      chrome.windows.update(fsWindowId, { state: fsPrevState }).catch(() => {});
+    }
+    fsWindowId = null;
+    fsPrevState = null;
+    sendResponse({ ok: true });
   }
 });
 
