@@ -1,40 +1,35 @@
 'use strict';
 
-// YouTube's fullscreen button triggers the HTML Fullscreen API, which Chrome
-// blocks from reaching OS-level fullscreen while tabCapture is active.
-// We intercept the click: release capture → request fullscreen → re-capture.
+// Patch Element.prototype.requestFullscreen at the page JS level (MAIN world,
+// document_start) so every fullscreen trigger — button click, F key,
+// double-click, or any direct API call — is intercepted on every site.
+//
+// When tabCapture is active Chrome blocks OS-level fullscreen. Fix:
+// release capture → call original requestFullscreen → re-capture after.
 
-function patchFullscreenButton() {
-  const fsButton = document.querySelector('.ytp-fullscreen-button');
-  if (!fsButton || fsButton._vbPatched) return;
-  fsButton._vbPatched = true;
+if (typeof chrome !== 'undefined' && chrome.runtime) {
+  const _requestFullscreen = Element.prototype.requestFullscreen;
 
-  fsButton.addEventListener('click', async (e) => {
-    const { active } = await chrome.runtime.sendMessage({ type: 'IS_BOOST_ACTIVE' })
-      .catch(() => ({ active: false }));
+  Element.prototype.requestFullscreen = async function (...args) {
+    let wasActive = false;
 
-    if (!active) return;
+    try {
+      const { active } = await chrome.runtime.sendMessage({ type: 'IS_BOOST_ACTIVE' });
+      wasActive = !!active;
+    } catch (_) {}
 
-    e.stopImmediatePropagation();
-    e.preventDefault();
-
-    await chrome.runtime.sendMessage({ type: 'RELEASE_FOR_FULLSCREEN' }).catch(() => {});
-
-    const player = document.querySelector('.html5-video-player');
-    if (document.fullscreenElement) {
-      await document.exitFullscreen().catch(() => {});
-    } else if (player) {
-      await player.requestFullscreen().catch(() => {});
+    if (wasActive) {
+      await chrome.runtime.sendMessage({ type: 'RELEASE_FOR_FULLSCREEN' }).catch(() => {});
     }
 
-    await new Promise(resolve =>
-      document.addEventListener('fullscreenchange', resolve, { once: true })
-    );
+    const result = await _requestFullscreen.apply(this, args);
 
-    chrome.runtime.sendMessage({ type: 'RESTORE_AFTER_FULLSCREEN' }).catch(() => {});
-  }, true); // capture phase — runs before YouTube's own click handler
+    if (wasActive) {
+      document.addEventListener('fullscreenchange', () => {
+        chrome.runtime.sendMessage({ type: 'RESTORE_AFTER_FULLSCREEN' }).catch(() => {});
+      }, { once: true });
+    }
+
+    return result;
+  };
 }
-
-const observer = new MutationObserver(patchFullscreenButton);
-observer.observe(document.documentElement, { childList: true, subtree: true });
-patchFullscreenButton();
