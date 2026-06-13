@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Volume Booster — Safe Tab Audio Amplifier",
+  "name": "Volume Booster",
   "version": "1.0.1",
   "description": "Amplify browser tab audio safely up to 600%. No adware, no tracking, 100% local. Works on YouTube, Spotify, Netflix and any website.",
   "permissions": [
@@ -17,7 +17,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Volume Booster — Safe Tab Audio Amplifier"
+    "default_title": "Volume Booster"
   },
   "background": {
     "service_worker": "background/service-worker.js"
