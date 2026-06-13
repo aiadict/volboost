@@ -1,35 +1,51 @@
 'use strict';
 
-// Patch Element.prototype.requestFullscreen at the page JS level (MAIN world,
-// document_start) so every fullscreen trigger — button click, F key,
-// double-click, or any direct API call — is intercepted on every site.
-//
-// When tabCapture is active Chrome blocks OS-level fullscreen. Fix:
-// release capture → call original requestFullscreen → re-capture after.
+// MAIN world — patches Element.prototype.requestFullscreen so every fullscreen
+// trigger (button, F key, double-click, any API call) is intercepted on every
+// site. Communicates with the ISOLATED world bridge via window.postMessage
+// because chrome.runtime is not reliably available in the MAIN world.
 
-if (typeof chrome !== 'undefined' && chrome.runtime) {
-  const _requestFullscreen = Element.prototype.requestFullscreen;
+const _requestFullscreen = Element.prototype.requestFullscreen;
 
-  Element.prototype.requestFullscreen = async function (...args) {
-    let wasActive = false;
-
-    try {
-      const { active } = await chrome.runtime.sendMessage({ type: 'IS_BOOST_ACTIVE' });
-      wasActive = !!active;
-    } catch (_) {}
-
-    if (wasActive) {
-      await chrome.runtime.sendMessage({ type: 'RELEASE_FOR_FULLSCREEN' }).catch(() => {});
+Element.prototype.requestFullscreen = async function (...args) {
+  // Ask ISOLATED bridge whether boost is active on this tab.
+  const active = await new Promise(resolve => {
+    const id = Math.random().toString(36).slice(2);
+    function handler(e) {
+      if (e.source !== window || !e.data?._vb) return;
+      if (e.data.type === 'VB_STATUS' && e.data.id === id) {
+        window.removeEventListener('message', handler);
+        resolve(!!e.data.active);
+      }
     }
+    window.addEventListener('message', handler);
+    window.postMessage({ _vb: true, type: 'VB_CHECK', id }, '*');
+  });
 
-    const result = await _requestFullscreen.apply(this, args);
+  if (active) {
+    // Release tabCapture so Chrome allows OS-level fullscreen.
+    await new Promise(resolve => {
+      const id = Math.random().toString(36).slice(2);
+      function handler(e) {
+        if (e.source !== window || !e.data?._vb) return;
+        if (e.data.type === 'VB_RELEASED' && e.data.id === id) {
+          window.removeEventListener('message', handler);
+          resolve();
+        }
+      }
+      window.addEventListener('message', handler);
+      window.postMessage({ _vb: true, type: 'VB_RELEASE', id }, '*');
+    });
+  }
 
-    if (wasActive) {
-      document.addEventListener('fullscreenchange', () => {
-        chrome.runtime.sendMessage({ type: 'RESTORE_AFTER_FULLSCREEN' }).catch(() => {});
-      }, { once: true });
-    }
+  const result = await _requestFullscreen.apply(this, args);
 
-    return result;
-  };
-}
+  if (active) {
+    // Re-capture audio after fullscreen transition completes.
+    document.addEventListener('fullscreenchange', () => {
+      window.postMessage({ _vb: true, type: 'VB_RESTORE' }, '*');
+    }, { once: true });
+  }
+
+  return result;
+};
