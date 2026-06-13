@@ -1,15 +1,9 @@
 'use strict';
 
-// For sites using tabCapture (Netflix, Twitch, etc.): Chrome intentionally
-// blocks OS-level fullscreen while a tab is captured. The element enters
-// "fullscreen-in-tab" mode (fills viewport but browser chrome stays visible).
-//
-// Fix: detect entry into fullscreen-in-tab via fullscreenchange, then ask the
-// SW to put the browser WINDOW in fullscreen — hiding the browser chrome and
-// making the video visually fill the entire screen.
-//
-// YouTube is handled separately (createMediaElementSource, no tabCapture),
-// so IS_BOOST_ACTIVE returns false for YouTube and this bridge is a no-op there.
+// Chrome blocks OS-level fullscreen while a tab is captured (tabCapture active).
+// The video fills the viewport but browser chrome stays visible ("fullscreen within tab").
+// Fix: on fullscreenchange, ask the service worker to put the browser window itself
+// into fullscreen via chrome.windows.update, which is a separate code path and works.
 
 let bridgeActive = false;
 

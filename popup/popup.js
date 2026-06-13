@@ -6,8 +6,6 @@ const label = document.getElementById('volumeLabel');
 const resetBtn = document.getElementById('resetBtn');
 const status = document.getElementById('status');
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 function getVolumeLabel(pct) {
   if (pct === 100) return 'Normal volume';
   if (pct <= 150) return 'Slightly boosted';
@@ -41,15 +39,11 @@ function showStatus(msg, isError = false) {
   setTimeout(() => { status.textContent = ''; status.className = 'status'; }, 2500);
 }
 
-// ─── Tab helpers ─────────────────────────────────────────────────────────────
-
 async function getCurrentTab() {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   return tab;
 }
-
-// ─── Volume control ──────────────────────────────────────────────────────────
 
 async function applyVolume(pct) {
   const gain = pct / 100;
@@ -85,8 +79,6 @@ async function applyVolume(pct) {
   }
 }
 
-// ─── Initialise popup ────────────────────────────────────────────────────────
-
 async function init() {
   let initialPct = 100;
   try {
@@ -101,10 +93,7 @@ async function init() {
   updateUI(initialPct);
 }
 
-// ─── Events ──────────────────────────────────────────────────────────────────
-
 slider.addEventListener('input', () => updateUI(parseInt(slider.value)));
-
 slider.addEventListener('change', () => applyVolume(parseInt(slider.value)));
 
 resetBtn.addEventListener('click', async () => {
@@ -118,5 +107,4 @@ resetBtn.addEventListener('click', async () => {
   } catch (_) {}
 });
 
-// ─── Boot ────────────────────────────────────────────────────────────────────
 init();

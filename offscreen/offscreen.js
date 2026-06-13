@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     startCapture(msg.streamId, msg.gain)
       .then(() => sendResponse({ ok: true }))
       .catch(e => sendResponse({ ok: false, error: e.message }));
-    return true; // async response
+    return true;
   }
 
   if (msg.type === 'SET_GAIN') {
@@ -19,7 +19,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       gainNode.gain.value = msg.gain;
       sendResponse({ ok: true });
     } else {
-      sendResponse({ ok: false }); // AudioContext died — caller should restart capture
+      sendResponse({ ok: false }); // no active context; caller will restart capture
     }
     return;
   }
@@ -51,7 +51,6 @@ async function startCapture(streamId, gain) {
   source.connect(gainNode);
   gainNode.connect(audioCtx.destination);
 
-  // Ensure the context isn't suspended (autoplay policy)
   if (audioCtx.state === 'suspended') await audioCtx.resume();
 }
 

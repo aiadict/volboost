@@ -1,9 +1,8 @@
 'use strict';
 
-let capturedTabId = null;    // Tab using tabCapture
-let ytBoostTabId = null;     // Tab using YouTube content-script boost
-let fsWindowId = null;       // Window we put into fullscreen for the bridge
-let fsPrevState = null;      // Window state to restore when fullscreen exits
+let capturedTabId = null;
+let fsWindowId = null;
+let fsPrevState = null;
 
 // Restore capturedTabId across service worker restarts.
 (async () => {
@@ -13,15 +12,10 @@ let fsPrevState = null;      // Window state to restore when fullscreen exits
   } catch (_) {}
 })();
 
-// ─── Tab cleanup ──────────────────────────────────────────────────────────────
-
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   chrome.storage.local.remove(`vb_${tabId}`);
   if (capturedTabId === tabId) await stopCapture();
-  if (ytBoostTabId === tabId) ytBoostTabId = null;
 });
-
-// ─── Messages ─────────────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'BOOST') {
@@ -32,13 +26,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === 'STOP') {
-    stopAll()
+    stopCapture()
       .then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
     return true;
   }
-
-  // ─── Fullscreen bridge (content script on tabCapture sites) ───────────────
 
   if (msg.type === 'IS_BOOST_ACTIVE') {
     sendResponse({ active: capturedTabId !== null && capturedTabId === sender.tab?.id });
@@ -59,6 +51,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
     }
     sendResponse({ ok: false });
+    return;
   }
 
   if (msg.type === 'FULLSCREEN_EXIT') {
@@ -71,27 +64,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-// ─── Routing ──────────────────────────────────────────────────────────────────
-
 async function handleBoost(tabId, gain) {
-  // Try YouTube content-script approach first.
-  // chrome.tabs.sendMessage rejects immediately if the content script is not
-  // present, so this is fast on non-YouTube tabs.
-  try {
-    if (ytBoostTabId === tabId && gainNode_alive()) {
-      const res = await chrome.tabs.sendMessage(tabId, { type: 'YT_SET_GAIN', gain });
-      if (res?.ok) return;
-    }
-    const res = await chrome.tabs.sendMessage(tabId, { type: 'YT_BOOST', gain });
-    if (res?.ok) {
-      if (capturedTabId) await stopCapture(); // Stop any existing tabCapture.
-      ytBoostTabId = tabId;
-      return;
-    }
-  } catch (_) {}
-
-  // Non-YouTube tab: use tabCapture.
-  ytBoostTabId = null;
   if (capturedTabId === tabId && await chrome.offscreen.hasDocument()) {
     try {
       const res = await chrome.runtime.sendMessage({ target: 'offscreen', type: 'SET_GAIN', gain });
@@ -100,15 +73,6 @@ async function handleBoost(tabId, gain) {
   }
   await startCapture(tabId, gain);
 }
-
-// ─── YouTube helpers ──────────────────────────────────────────────────────────
-
-// Lightweight check — avoids a message round-trip when gain hasn't changed.
-function gainNode_alive() {
-  return ytBoostTabId !== null;
-}
-
-// ─── tabCapture logic ─────────────────────────────────────────────────────────
 
 async function startCapture(tabId, gain) {
   await releaseExistingCapture();
@@ -134,14 +98,6 @@ async function stopCapture() {
   try {
     if (await chrome.offscreen.hasDocument()) await chrome.offscreen.closeDocument();
   } catch (_) {}
-}
-
-async function stopAll() {
-  if (ytBoostTabId) {
-    try { await chrome.tabs.sendMessage(ytBoostTabId, { type: 'YT_STOP' }); } catch (_) {}
-    ytBoostTabId = null;
-  }
-  await stopCapture();
 }
 
 async function ensureOffscreenDocument() {

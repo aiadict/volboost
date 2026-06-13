@@ -1,11 +1,11 @@
-/* ─── Reset ─────────────────────────────────────────────── */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ─── Base ──────────────────────────────────────────────── */
+/* Base */
 body {
   width: 280px;
   background: #0f0f14;
@@ -22,7 +22,7 @@ body {
   gap: 12px;
 }
 
-/* ─── Header ────────────────────────────────────────────── */
+/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -57,7 +57,7 @@ body {
   border: 1px solid #2a2a3a;
 }
 
-/* ─── Volume Display ────────────────────────────────────── */
+/* Volume display */
 .volume-display {
   text-align: center;
   line-height: 1;
@@ -85,7 +85,7 @@ body {
   margin-top: -4px;
 }
 
-/* ─── Slider ────────────────────────────────────────────── */
+/* Slider */
 .slider-wrap {
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: #3a3a4a;
 }
 
-/* ─── Reset Button ──────────────────────────────────────── */
+/* Reset button */
 .reset-btn {
   width: 100%;
   padding: 8px 12px;
@@ -148,7 +148,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: #1a1a24;
 }
 
-/* ─── Status ────────────────────────────────────────────── */
+/* Status */
 .status {
   font-size: 11px;
   color: #e05a5a;
@@ -160,7 +160,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: #5aaa7a;
 }
 
-/* ─── Pro Banner ────────────────────────────────────────── */
+/* Pro banner */
 .pro-banner {
   padding: 10px 12px;
   background: #141420;
@@ -194,7 +194,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   opacity: 0.88;
 }
 
-/* ─── Footer ────────────────────────────────────────────── */
+/* Footer */
 .footer {
   text-align: center;
   font-size: 10px;
