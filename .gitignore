@@ -3,3 +3,11 @@
 node_modules/
 .env
 dist/
+
+# Internal — not for public repo
+DEVELOPER_GUIDE.md
+LAUNCH_GUIDE.md
+MONETIZATION_GUIDE.md
+research/
+dev_*.txt
+dev_*.md
