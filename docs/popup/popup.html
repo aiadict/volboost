@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volume Booster</title>
+  <link rel="stylesheet" href="../shared/tokens.css" />
+  <link rel="stylesheet" href="../shared/hifi.css" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="pop">
+
+    <!-- Header -->
+    <header class="head">
+      <span class="pwr" id="pwr" aria-hidden="true"></span>
+      <span class="brand">Volume Booster</span>
+      <span class="sp"></span>
+      <span class="model">VB-600</span>
+      <button class="icon-btn" id="shareBtn" aria-label="Copy store link" title="Copy store link">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 13v5.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </header>
+
+    <!-- Readout -->
+    <div class="lcd">
+      <div class="lcd-top">
+        <span class="where" id="where">Not boosting</span>
+        <span class="limtag" id="limTag">Limit</span>
+      </div>
+      <div class="lcd-main">
+        <div class="num"><span id="volumeDisplay">100</span><small>%</small></div>
+        <span class="db" id="dbDisplay">0.0 dB</span>
+      </div>
+      <div class="vu" id="vu" aria-hidden="true"></div>
+    </div>
+
+    <div class="notice" id="notice" role="status" hidden></div>
+
+    <!-- Knob -->
+    <div class="knobwrap">
+      <svg viewBox="0 0 220 220" id="ring"></svg>
+      <div class="knob" id="knob" role="slider" tabindex="0" aria-label="Volume level"
+           aria-valuemin="0" aria-valuemax="600" aria-valuenow="100" aria-valuetext="100 percent, 0 decibels">
+        <div class="grip" id="grip"></div>
+      </div>
+    </div>
+
+    <!-- Modes -->
+    <div class="keys" role="radiogroup" aria-label="Sound mode" id="modes">
+      <button class="key" role="radio" aria-checked="true" data-mode="normal" title="Unchanged sound">Normal</button>
+      <button class="key" role="radio" aria-checked="false" data-mode="voice" title="Clearer speech for films and calls">Voice</button>
+      <button class="key" role="radio" aria-checked="false" data-mode="bass" title="More low end for small speakers">Bass</button>
+      <button class="key" role="radio" aria-checked="false" data-mode="night" title="Evens out loud and quiet parts">Night</button>
+    </div>
+
+    <!-- Rating card (shown once, after a few days of use) -->
+    <div class="rate" id="rateCard" hidden>
+      <p><b>Glad it’s helping.</b> A quick rating helps other people find Volume Booster.</p>
+      <div class="rate-actions">
+        <button class="key plain" id="rateGo">Rate it</button>
+        <button class="key plain" id="rateLater">Not now</button>
+      </div>
+      <a class="rate-help" id="rateHelp" href="#">Something not working?</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="foot">
+      <button class="key plain" id="resetBtn">Reset</button>
+      <button class="key" id="limiterBtn" aria-pressed="true" title="Stops crackle at high levels">Limiter</button>
+    </div>
+    <div class="silk">Local only · No tracking</div>
+
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+  <script src="../chrome-shim.js"></script>
+  <script src="../shared/hifi.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Help · Volume Booster</title>
+  <meta name="description" content="Fixes for common Volume Booster problems: no sound, pages that can’t be boosted, distortion, fullscreen." />
+  <link rel="icon" href="icon32.png" />
+  <link rel="stylesheet" href="shared/tokens.css" />
+  <link rel="stylesheet" href="shared/hifi.css" />
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="./"><img src="icon32.png" width="28" height="28" alt="" /><span>Volume Booster</span></a>
+      <div class="nav-links">
+        <a href="./#how">How it works</a>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="help.html" aria-current="page">Help</a>
+      </div>
+      <a class="key cta small" href="https://chromewebstore.google.com/detail/obbffbohmfndnmcmilihmjdioekchmgk">Add to Chrome</a>
+    </nav>
+
+    <main class="page">
+      <p class="eyebrow">Help</p>
+      <h1>Something not working?</h1>
+      <p class="lead">Most problems have a quick fix. Open the topic that matches.</p>
+      <div class="faq">
+        <details><summary>No sound, or the sound stopped, after boosting</summary>
+          <ol><li>Reload the tab (⌘R on Mac, Ctrl+R on Windows).</li><li>Start the video or music again.</li><li>Open Volume Booster and turn the knob once more.</li></ol>
+          <p>If it still stays silent, press Reset in the popup, then turn the knob again.</p></details>
+        <details><summary>“Chrome doesn’t allow boosting on this page”</summary>
+          <p>Chrome doesn’t let extensions capture sound on its own pages, such as Settings, New Tab, the Extensions page or the Chrome Web Store. Any normal website works.</p></details>
+        <details><summary>The sound is distorted or crackles</summary>
+          <p>Check that the Limiter key in the popup has its orange light on. The limiter stops crackle at high levels. If the source itself is already distorted, a lower level or the Voice mode usually sounds cleaner.</p></details>
+        <details><summary>A boost stopped when I boosted another tab</summary>
+          <p>Volume Booster boosts one tab at a time for now. Turning the knob on a new tab moves the boost there, and the popup tells you when that will happen.</p></details>
+        <details><summary>Fullscreen</summary>
+          <p>Fullscreen works while a tab is boosted: the whole window goes fullscreen. Press Esc to leave it as usual. If a site misbehaves, press Reset, enter fullscreen, then boost again.</p></details>
+        <details><summary>What do Voice, Bass and Night do?</summary>
+          <ul><li><b>Voice</b> brings speech forward: films with mumbled dialogue, quiet people on calls, lectures.</li><li><b>Bass</b> adds low end for small laptop speakers.</li><li><b>Night</b> makes quiet parts louder and loud parts softer, so you don’t have to keep changing the volume.</li></ul></details>
+        <details><summary>What does the number on the icon mean?</summary>
+          <p>It’s the boost level of that tab: 250 means 250%. No number means the tab plays at its normal level.</p></details>
+        <details><summary>Turning it back off</summary>
+          <p>Press Reset, or turn the knob back to 100 with the Normal mode selected. The tab goes back to its normal sound right away.</p></details>
+      </div>
+      <h2>Still stuck?</h2>
+      <p>Open an issue on <a href="https://github.com/aiadict/volboost/issues/new">GitHub</a> with the site and what happened. You don’t need to include anything personal.</p>
+    </main>
+
+    <footer class="foot">
+      <span>Volume Booster — Loud &amp; Clear</span>
+      <a href="help.html">Help</a>
+      <a href="privacy-policy.html">Privacy policy</a>
+      <a href="https://github.com/aiadict/volboost">GitHub</a>
+    </footer>
+  </div>
+</body>
+</html>

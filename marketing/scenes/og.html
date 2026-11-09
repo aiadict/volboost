@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="1200x630 ../docs/og.png" />
+  <link rel="stylesheet" href="../../shared/tokens.css" />
+  <link rel="stylesheet" href="../../shared/hifi.css" />
+  <style>
+    body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--panel); color: var(--ink); font-family: var(--font-ui); position: relative; }
+    .txt { position: absolute; left: 80px; top: 92px; width: 600px; }
+    .ey { font-weight: 700; font-stretch: 118%; font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--silk); }
+    h1 { margin: 22px 0 0; font-weight: 800; font-stretch: 75%; font-size: 132px; line-height: 0.88; text-transform: uppercase; }
+    h1 em { font-style: normal; color: var(--led); }
+    p { margin: 30px 0 0; font-family: var(--font-mono); font-size: 22px; color: var(--silk); }
+    .dev { position: absolute; right: 70px; top: 50%; transform: translateY(-50%) scale(2.25); transform-origin: right center; }
+    .knobwrap { margin: 0; height: 220px; }
+  </style>
+</head>
+<body>
+  <div class="txt">
+    <div class="ey">Volume Booster — Loud &amp; Clear</div>
+    <h1>This one<br />goes to <em>600</em>.</h1>
+    <p>Free Chrome extension · No ads · No tracking</p>
+  </div>
+  <div class="dev">
+    <div class="knobwrap">
+      <svg viewBox="0 0 220 220" id="ring"></svg>
+      <div class="knob" id="knob"><div class="grip" id="grip"></div></div>
+    </div>
+  </div>
+  <script src="../../shared/hifi.js"></script>
+  <script>mountKnob({ ring: document.getElementById('ring'), knob: document.getElementById('knob'), grip: document.getElementById('grip'), onInput() {} }).render(520);</script>
+</body>
+</html>
