@@ -6,6 +6,9 @@ let fsWindowId = null;
 let fsPrevState = null;
 
 const BADGE_COLOR = '#FF6A1A';
+const UNINSTALL_URL = 'https://aiadict.github.io/volboost/bye.html';
+
+chrome.runtime.setUninstallURL(UNINSTALL_URL).catch(() => {});
 
 // Restore capture state across service worker restarts (storage.session is cleared on
 // browser restart and extension reload, so it never outlives the offscreen document).
@@ -19,8 +22,14 @@ const ready = (async () => {
   } catch (_) {}
 })();
 
-chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+  if (reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') }).catch(() => {});
+  }
   if (reason === 'update') {
+    // Updates never open a tab; the popup shows a one-time "what's new" note instead.
+    if (previousVersion?.startsWith('1.0.')) await chrome.storage.local.set({ whatsNew: '1.1' });
+
     // v1.0.x kept per-tab levels in storage.local; tab IDs don't survive restarts, so drop them.
     const all = await chrome.storage.local.get(null);
     const stale = Object.keys(all).filter(k => k.startsWith('vb_'));

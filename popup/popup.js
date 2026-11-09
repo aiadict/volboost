@@ -5,14 +5,10 @@ const REVIEWS_URL = STORE_URL + '/reviews';
 const HELP_URL = 'https://aiadict.github.io/volboost/help.html';
 
 const SEND_INTERVAL = 60;  // ms between live updates while turning the knob
-const RING_SEGMENTS = 41;
-const VU_SEGMENTS = 24;
 const DAY = 24 * 60 * 60 * 1000;
 
 const $ = id => document.getElementById(id);
 const knob = $('knob');
-const grip = $('grip');
-const ring = $('ring');
 const vu = $('vu');
 const modesGroup = $('modes');
 const modeKeys = [...modesGroup.querySelectorAll('[role="radio"]')];
@@ -37,53 +33,15 @@ let meterPort = null;
 let noticeTimer = null;
 let toastTimer = null;
 
+// Knob, dbText, buildVu and showVu live in shared/hifi.js.
+const knobUI = mountKnob({ ring: $('ring'), knob, grip: $('grip'), onInput: setLevel });
+
 // ---------- display ----------
 
-function dbText(p) {
-  if (p <= 0) return '−∞ dB';
-  const d = 20 * Math.log10(p / 100);
-  if (Math.abs(d) < 0.05) return '0.0 dB';
-  return (d > 0 ? '+' : '−') + Math.abs(d).toFixed(1) + ' dB';
-}
-
-// Steps of 5, with a detent at 100% so "normal" is easy to hit.
-function snap(p) {
-  p = Math.round(p / 5) * 5;
-  if (Math.abs(p - 100) <= 8) p = 100;
-  return Math.max(0, Math.min(600, p));
-}
-
-function buildRing() {
-  let svg = '';
-  for (let i = 0; i < RING_SEGMENTS; i++) {
-    const v = (i / (RING_SEGMENTS - 1)) * 600;
-    const a = -135 + 270 * i / (RING_SEGMENTS - 1);
-    svg += `<rect class="seg${v >= 420 ? ' hot' : ''}" x="108.3" y="22" width="3.4" height="12" rx="1.7" transform="rotate(${a.toFixed(2)} 110 110)"/>`;
-  }
-  for (const [v, home] of [[0], [100, true], [300], [600]]) {
-    const a = (-135 + 270 * v / 600) * Math.PI / 180;
-    const x = 110 + 104 * Math.sin(a);
-    const y = 110 - 104 * Math.cos(a) + 3;
-    svg += `<text class="ringlbl${home ? ' home' : ''}" data-v="${v}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${v}</text>`;
-  }
-  ring.innerHTML = svg;
-  for (let i = 0; i < VU_SEGMENTS; i++) {
-    const led = document.createElement('i');
-    if (i >= 14) led.classList.add('mid');
-    if (i >= 20) led.classList.add('top');
-    vu.appendChild(led);
-  }
-}
-
 function render() {
-  ring.querySelectorAll('.seg').forEach((seg, i) => {
-    seg.classList.toggle('lit', pct > 0 && (i / (RING_SEGMENTS - 1)) * 600 <= pct);
-  });
-  grip.style.setProperty('--a', (-135 + 270 * pct / 600) + 'deg');
+  knobUI.render(pct);
   $('volumeDisplay').textContent = pct;
   $('dbDisplay').textContent = dbText(pct);
-  knob.setAttribute('aria-valuenow', pct);
-  knob.setAttribute('aria-valuetext', `${pct} percent, ${dbText(pct).replace('+', 'plus ').replace('−', 'minus ').replace('dB', 'decibels')}`);
 
   modeKeys.forEach(k => {
     const on = k.dataset.mode === mode;
@@ -134,11 +92,8 @@ function connectMeter() {
     return;
   }
   meterPort.onMessage.addListener(({ bands, reduction }) => {
-    const top = [...bands].sort((a, b) => b - a);
-    const level = (top[0] + top[1] + top[2]) / 3;
-    const lit = Math.round(Math.max(0, Math.min(1, (level - 60) / 180)) * VU_SEGMENTS);
-    vu.querySelectorAll('i').forEach((led, i) => led.classList.toggle('on', i < lit));
-    $('limTag').classList.toggle('active', limiter && reduction < -1);
+    showVu(vu, bands);
+    showLimit($('limTag'), limiter && reduction < -1);
   });
   meterPort.onDisconnect.addListener(() => {
     void chrome.runtime.lastError;
@@ -148,16 +103,14 @@ function connectMeter() {
 }
 
 function clearMeter() {
-  vu.querySelectorAll('i.on').forEach(led => led.classList.remove('on'));
-  $('limTag').classList.remove('active');
+  showVu(vu, null);
+  showLimit($('limTag'), null);
 }
 
 // ---------- applying levels ----------
 
 function setLevel(p) {
-  if (disabled) return;
-  p = snap(p);
-  if (p === pct) return;
+  if (disabled || p === pct) return;
   pct = p;
   render();
   requestApply();
@@ -208,6 +161,14 @@ async function apply(p, m) {
   }
 }
 
+// Shown once after updating from 1.0.x.
+async function showWhatsNew() {
+  const { whatsNew } = await chrome.storage.local.get('whatsNew');
+  if (!whatsNew) return;
+  showNotice('New in 1.1: turn the knob, try Voice, Bass and Night, and enjoy a limiter that stops crackle.');
+  await chrome.storage.local.remove('whatsNew');
+}
+
 // ---------- rating card ----------
 
 async function maybeShowRating() {
@@ -237,40 +198,6 @@ $('rateHelp').addEventListener('click', (e) => {
 });
 
 // ---------- controls ----------
-
-let drag = null;
-knob.addEventListener('pointerdown', (e) => {
-  if (disabled) return;
-  knob.setPointerCapture(e.pointerId);
-  drag = { x: e.clientX, y: e.clientY, p: pct };
-  knob.focus();
-});
-knob.addEventListener('pointermove', (e) => {
-  if (!drag) return;
-  setLevel(drag.p + ((e.clientX - drag.x) - (e.clientY - drag.y)) * 2.2);
-});
-knob.addEventListener('pointerup', () => { drag = null; });
-knob.addEventListener('pointercancel', () => { drag = null; });
-
-knob.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  setLevel(pct + (e.deltaY < 0 ? 10 : -10));
-}, { passive: false });
-
-knob.addEventListener('keydown', (e) => {
-  const step = e.shiftKey ? 50 : 10;
-  const moves = { ArrowUp: step, ArrowRight: step, ArrowDown: -step, ArrowLeft: -step, PageUp: 50, PageDown: -50 };
-  if (e.key in moves) setLevel(pct + moves[e.key]);
-  else if (e.key === 'Home') setLevel(0);
-  else if (e.key === 'End') setLevel(600);
-  else return;
-  e.preventDefault();
-});
-
-ring.addEventListener('click', (e) => {
-  const v = e.target.closest('.ringlbl')?.dataset.v;
-  if (v !== undefined) setLevel(Number(v));
-});
 
 modeKeys.forEach((k, i) => {
   k.addEventListener('click', () => selectMode(k.dataset.mode));
@@ -341,7 +268,7 @@ function disableControls() {
 }
 
 async function init() {
-  buildRing();
+  buildVu(vu);
   let state = null;
   try {
     tab = await getCurrentTab();
@@ -365,6 +292,8 @@ async function init() {
   if (state?.otherTab) {
     const where = state.otherTab.host || 'another tab';
     showNotice(`Boost is on ${where} (${state.otherTab.pct}%). Turning the knob here moves it to this tab.`);
+  } else if (!disabled) {
+    showWhatsNew().catch(() => {});
   }
   connectMeter();
   maybeShowRating().catch(() => {});
