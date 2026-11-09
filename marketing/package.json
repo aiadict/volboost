@@ -1,0 +1,11 @@
+{
+  "name": "volboost-marketing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "icons": "node render-icons.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.54.2"
+  }
+}

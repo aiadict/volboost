@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Volume Booster",
-  "version": "1.0.2",
-  "description": "Amplify browser tab audio safely up to 600%. No adware, no tracking, 100% local. Works on YouTube, Spotify, Netflix and any website.",
+  "name": "Volume Booster — Loud & Clear",
+  "version": "1.1.0",
+  "description": "Turn any tab up to 600% without the crackle. Voice, Bass and Night modes. No ads, no tracking, nothing leaves your device.",
   "permissions": [
     "activeTab",
     "scripting",
