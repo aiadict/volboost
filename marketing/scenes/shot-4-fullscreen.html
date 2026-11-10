@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="1280x800 out/store/screenshot-4-fullscreen.png" />
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>
+    body { width: 1280px; height: 800px; }
+    .full { position: absolute; left: 600px; top: 0; right: 0; bottom: 0; }
+    .full .video { height: 100%; }
+    .full .chip { position: absolute; right: 28px; top: 28px; z-index: 3; }
+    .corner { position: absolute; width: 44px; height: 44px; border: 5px solid var(--led); z-index: 3; }
+    .c1 { left: 28px; top: 28px; border-right: 0; border-bottom: 0; }
+    .c2 { left: 28px; bottom: 84px; border-right: 0; border-top: 0; }
+    .c3 { right: 28px; bottom: 84px; border-left: 0; border-top: 0; }
+  </style>
+</head>
+<body>
+  <div class="copy" style="width: 460px">
+    <p class="eyebrow">Fullscreen</p>
+    <h1>Fullscreen <em>still</em> works.</h1>
+    <p class="sub">The boost stays on in fullscreen, on <b>YouTube, Netflix</b> and everywhere else.</p>
+  </div>
+  <div class="full">
+    <div class="video">
+      <div class="caption">Boosted, in fullscreen</div>
+      <div class="player"><span class="play"></span><span>1:02:17 / 1:48:30</span><span class="bar"></span><span>HD</span></div>
+    </div>
+    <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span>
+    <span class="chip">Boost 250% · On</span>
+  </div>
+  <script>window.sceneReady = Promise.resolve();</script>
+</body>
+</html>

@@ -17,8 +17,8 @@ const DEMO_CHORDS = [
 const DEMO_BASS = [110.0, 87.31, 130.81, 98.0];
 
 // level: source loudness before boosting; deliberately quiet, like a video recorded too low.
-function createDemoSynth({ params, level = 0.26 }) {
-  const ctx = new AudioContext();
+// ctx: pass an OfflineAudioContext to render the loop to a buffer (marketing video).
+function createDemoSynth({ params, level = 0.26, ctx = new AudioContext() }) {
   const src = ctx.createGain();
   src.gain.value = level;
   const nodes = buildGraph(ctx, src);
@@ -125,6 +125,16 @@ function createDemoSynth({ params, level = 0.26 }) {
     },
     setParams(p) {
       applyGraphParams(ctx, nodes, p);
+    },
+    // Offline use: schedules every note up to `until` seconds in one go.
+    scheduleUntil(until) {
+      nextTime = 0.05;
+      step = 0;
+      while (nextTime < until) {
+        scheduleStep(step, nextTime);
+        nextTime += DEMO_STEP;
+        step = (step + 1) % 64;
+      }
     },
     // True while the limiter is audibly working (more than 1 dB of gain reduction).
     limiting() {

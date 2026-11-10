@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="1280x800 out/store/screenshot-1-boost.png" />
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>body { width: 1280px; height: 800px; }</style>
+</head>
+<body>
+  <div class="copy">
+    <p class="eyebrow">Volume Booster — Loud &amp; Clear</p>
+    <h1>Turn any tab up to <em>600%</em>.</h1>
+    <p class="sub">Video too quiet? Turn the knob. <b>You hear it change as you turn.</b></p>
+  </div>
+  <div class="win" id="win" style="left: 560px; top: 56px; width: 660px; height: 700px;"></div>
+  <iframe class="popup-frame" id="pop" style="right: 82px; top: 138px; transform: scale(1.18);"></iframe>
+  <script src="kit.js"></script>
+  <script>
+    document.getElementById('win').innerHTML = Kit.browser({ badge: '250' });
+    window.sceneReady = Kit.popup(document.getElementById('pop')).then(p => p.set({ pct: 250, level: 0.72, t: 1.3 }));
+  </script>
+</body>
+</html>

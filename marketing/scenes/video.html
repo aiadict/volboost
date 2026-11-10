@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Promo video timeline. Rendered frame by frame by record.mjs (not by render-scenes.mjs). -->
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>
+    body { width: 1920px; height: 1080px; }
+    /* Designed at 1280x720, scaled to 1080p. */
+    .stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform: scale(1.5); transform-origin: 0 0; overflow: hidden; background: var(--panel); }
+    .layer { position: absolute; inset: 0; opacity: 0; }
+    .copy { left: 64px; width: 420px; }
+    h1 { font-size: 76px; }
+    .big { font-size: 104px; }
+    .sub { font-size: 21px; }
+    #full .video { position: absolute; inset: 0; }
+    #full .chip { position: absolute; right: 28px; top: 28px; z-index: 3; }
+    #full .panel { position: absolute; left: 40px; top: 40px; z-index: 3; background: var(--panel); border-radius: 14px; padding: 22px 26px; }
+    #full .panel h1 { font-size: 56px; }
+    .facts { margin-top: 26px; display: flex; flex-direction: column; gap: 10px; font-size: 20px; }
+    .facts div { display: flex; gap: 12px; align-items: baseline; }
+    .facts div::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--led); box-shadow: 0 0 8px var(--led); flex: none; transform: translateY(-2px); }
+    .dev { position: absolute; right: 90px; top: 50%; transform: translateY(-50%) scale(2); transform-origin: right center; }
+    .dev .knobwrap { margin: 0; height: 220px; }
+    .store { margin-top: 26px; font: 600 18px var(--font-mono); color: var(--silk); }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <!-- 0–4 s: the problem -->
+    <div class="layer" id="title">
+      <div class="copy" style="width: 560px">
+        <p class="eyebrow">Volume Booster — Loud &amp; Clear</p>
+        <h1 class="big">Laptop speakers too <em>quiet?</em></h1>
+      </div>
+      <div class="win" id="titleWin" style="left: 700px; top: 150px; width: 520px; height: 420px;"></div>
+    </div>
+
+    <!-- 4–26 s: browser with the real popup -->
+    <div class="layer" id="browser">
+      <div class="copy">
+        <p class="eyebrow" id="bEyebrow"></p>
+        <h1 id="bTitle"></h1>
+        <p class="sub" id="bSub"></p>
+      </div>
+      <div class="win" id="win" style="left: 520px; top: 34px; width: 720px; height: 652px;"></div>
+      <iframe class="popup-frame" id="pop" style="right: 64px; top: 116px;"></iframe>
+    </div>
+
+    <!-- 26–30 s: fullscreen -->
+    <div class="layer" id="full">
+      <div class="video">
+        <div class="caption">Boosted, in fullscreen</div>
+        <div class="player"><span class="play"></span><span>1:02:17 / 1:48:30</span><span class="bar"></span><span>HD</span></div>
+      </div>
+      <span class="chip">Boost 300% · On</span>
+      <div class="panel"><p class="eyebrow">Fullscreen</p><h1>Still works.</h1></div>
+    </div>
+
+    <!-- 30–33 s: privacy -->
+    <div class="layer" id="privacy">
+      <div class="copy" style="width: 640px">
+        <p class="eyebrow">Private by design</p>
+        <h1>Nothing leaves your <em>computer</em>.</h1>
+        <div class="facts"><div>All sound processing on your device</div><div>No account, no ads, no analytics</div></div>
+      </div>
+    </div>
+
+    <!-- 33–36 s: call to action -->
+    <div class="layer" id="cta">
+      <div class="copy" style="width: 640px">
+        <p class="eyebrow">Volume Booster — Loud &amp; Clear</p>
+        <h1 class="big">This one goes to <em>600</em>.</h1>
+        <p class="store">Free on the Chrome Web Store</p>
+      </div>
+      <div class="dev"><div class="knobwrap"><svg viewBox="0 0 220 220" id="ring"></svg><div class="knob" id="knob"><div class="grip" id="grip"></div></div></div></div>
+    </div>
+  </div>
+
+  <script src="/shared/audio-graph.js"></script>
+  <script src="/shared/demo-synth.js"></script>
+  <script src="/shared/hifi.js"></script>
+  <script src="kit.js"></script>
+  <script>
+    'use strict';
+    const DURATION = 36;
+    const $ = id => document.getElementById(id);
+    const ease = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+    const span = (t, a, b) => ease((t - a) / (b - a));
+
+    // One source of truth for picture and sound.
+    function paramsAt(t) {
+      let pct = 100;
+      let mode = 'normal';
+      let limiter = true;
+      if (t >= 6) pct = 100 + 250 * span(t, 6, 10);
+      if (t >= 12) pct = 350 + 250 * span(t, 12, 13);
+      if (t >= 14.5 && t < 16.5) limiter = false;
+      if (t >= 19) pct = 600 - 300 * span(t, 19, 19.5);
+      if (t >= 19.5) mode = 'voice';
+      if (t >= 21.8) mode = 'bass';
+      if (t >= 24) mode = 'night';
+      if (t >= 26) pct = 300;
+      return { pct: Math.round(pct / 5) * 5, mode, limiter };
+    }
+
+    function level(p) {
+      const l = 0.35 + 0.6 * Math.log(p.pct / 100) / Math.log(6);
+      return p.limiter ? Math.min(0.93, l) : Math.min(1, l + 0.05);
+    }
+
+    const LAYERS = { title: [0, 4], browser: [4, 26], full: [26, 30], privacy: [30, 33], cta: [33, 36.5] };
+    function fade(t, [a, b]) {
+      return Math.min(span(t, a - 0.2, a + 0.3), 1 - span(t, b - 0.2, b + 0.3));
+    }
+
+    let popup = null;
+    let ctaKnob = null;
+
+    function copyFor(t, p) {
+      if (t < 12) return ['How it works', 'Turn the <em>knob</em>.', 'You hear it change as you turn.'];
+      if (t < 19) return ['Built-in limiter', 'Louder, without the <em>crackle</em>.', p.limiter ? 'Limiter on: clean, even at 600%.' : 'Limiter off: it clips and crackles.'];
+      const subs = { normal: '', voice: '<b>Voice</b>: clearer dialogue and calls.', bass: '<b>Bass</b>: more low end for small speakers.', night: '<b>Night</b>: evens out loud scenes.' };
+      return ['Voice · Bass · Night', 'Hear <em>every</em> word.', subs[p.mode]];
+    }
+
+    window.renderFrame = (t) => {
+      for (const [id, range] of Object.entries(LAYERS)) $(id).style.opacity = fade(t, range).toFixed(3);
+      const p = paramsAt(t);
+
+      if (t < 4.5) $('titleWin').querySelector('.badge').textContent = '';
+      $('win').querySelector('.badge').textContent = p.pct === 100 && p.mode === 'normal' ? '' : String(p.pct);
+
+      const [eyebrow, title, sub] = copyFor(t, p);
+      $('bEyebrow').textContent = eyebrow;
+      $('bTitle').innerHTML = title;
+      $('bSub').innerHTML = sub;
+
+      // Popup opens at 4.6 s, like a click on the icon.
+      const open = span(t, 4.6, 5.0);
+      $('pop').style.opacity = open.toFixed(3);
+      $('pop').style.transform = `scale(${(0.96 + 0.08 * open).toFixed(4)})`;
+      popup.set({ ...p, level: level(p), limiting: p.limiter && p.pct >= 450, t });
+
+      ctaKnob.render(Math.round(100 + 420 * span(t, 33.3, 35)));
+    };
+
+    // Renders the soundtrack offline through the real boost chain; returns a 16-bit WAV as base64.
+    window.renderAudio = async () => {
+      const rate = 48000;
+      const ctx = new OfflineAudioContext(2, rate * DURATION, rate);
+      const synth = createDemoSynth({ params: paramsAt(0), ctx });
+      synth.scheduleUntil(DURATION);
+      for (let t = 0; t < DURATION; t += 1 / 30) applyGraphParams(ctx, synth.nodes, paramsAt(t), false, t);
+      const buf = await ctx.startRendering();
+
+      const n = buf.length;
+      const data = new DataView(new ArrayBuffer(44 + n * 4));
+      const str = (o, s) => [...s].forEach((c, i) => data.setUint8(o + i, c.charCodeAt(0)));
+      str(0, 'RIFF'); data.setUint32(4, 36 + n * 4, true); str(8, 'WAVEfmt ');
+      data.setUint32(16, 16, true); data.setUint16(20, 1, true); data.setUint16(22, 2, true);
+      data.setUint32(24, rate, true); data.setUint32(28, rate * 4, true); data.setUint16(32, 4, true); data.setUint16(34, 16, true);
+      str(36, 'data'); data.setUint32(40, n * 4, true);
+      const chans = [buf.getChannelData(0), buf.getChannelData(1)];
+      const fadeFrom = (DURATION - 1.2) * rate;
+      for (let i = 0; i < n; i++) {
+        const g = i > fadeFrom ? Math.max(0, 1 - (i - fadeFrom) / (1.2 * rate)) : 1;
+        for (let c = 0; c < 2; c++) {
+          const v = Math.max(-1, Math.min(1, chans[c][i] * g)); // hard clip, as a real speaker output would
+          data.setInt16(44 + (i * 2 + c) * 2, v * 0x7fff, true);
+        }
+      }
+      const bytes = new Uint8Array(data.buffer);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      return btoa(bin);
+    };
+
+    $('titleWin').innerHTML = Kit.browser({ badge: '', tab: 'Lecture 12 — Signals' });
+    $('win').innerHTML = Kit.browser({ badge: '' });
+    ctaKnob = mountKnob({ ring: $('ring'), knob: $('knob'), grip: $('grip'), onInput() {} });
+    window.sceneReady = Kit.popup($('pop')).then(p => { popup = p; window.renderFrame(0); });
+  </script>
+</body>
+</html>

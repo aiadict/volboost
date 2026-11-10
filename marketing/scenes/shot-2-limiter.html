@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="1280x800 out/store/screenshot-2-limiter.png" />
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>
+    body { width: 1280px; height: 800px; }
+    .waves { margin-top: 36px; display: flex; flex-direction: column; gap: 14px; width: 440px; }
+    .wave { background: var(--panel-2); border-radius: 12px; padding: 12px 16px; }
+    .wave span { font: 600 13px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--silk); }
+    .wave svg { display: block; width: 100%; height: 56px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="copy">
+    <p class="eyebrow">Built-in limiter</p>
+    <h1>Louder, without the <em>crackle</em>.</h1>
+    <p class="sub">The limiter catches the peaks, so <b>600% stays clean.</b></p>
+    <div class="waves">
+      <div class="wave"><span>Without a limiter · clipped</span>
+        <svg viewBox="0 0 400 56" preserveAspectRatio="none"><path d="M0 28 L14 4 L40 4 L54 28 L68 52 L94 52 L108 28 L122 4 L148 4 L162 28 L176 52 L202 52 L216 28 L230 4 L256 4 L270 28 L284 52 L310 52 L324 28 L338 4 L364 4 L378 28 L392 52 L400 52" fill="none" stroke="var(--hot)" stroke-width="3"/></svg></div>
+      <div class="wave"><span>With the limiter · clean</span>
+        <svg viewBox="0 0 400 56" preserveAspectRatio="none"><path d="M0 28 C 14 8, 40 8, 54 28 S 94 48, 108 28 S 148 8, 162 28 S 202 48, 216 28 S 256 8, 270 28 S 310 48, 324 28 S 364 8, 378 28 S 400 40, 400 40" fill="none" stroke="var(--led)" stroke-width="3"/></svg></div>
+    </div>
+  </div>
+  <div class="win" id="win" style="left: 600px; top: 56px; width: 620px; height: 700px;"></div>
+  <iframe class="popup-frame" id="pop" style="right: 82px; top: 138px; transform: scale(1.18);"></iframe>
+  <script src="kit.js"></script>
+  <script>
+    document.getElementById('win').innerHTML = Kit.browser({ badge: '600', tab: 'Interview — part 2' });
+    window.sceneReady = Kit.popup(document.getElementById('pop')).then(p => p.set({ pct: 600, level: 0.93, limiting: true, t: 2.1 }));
+  </script>
+</body>
+</html>

@@ -79,10 +79,10 @@ function softClipCurve() {
   return curve;
 }
 
-// params: { pct, mode, limiter }
-function applyGraphParams(ctx, nodes, params, immediate = false) {
+// params: { pct, mode, limiter }. `at` schedules the change for a later time (offline rendering).
+function applyGraphParams(ctx, nodes, params, immediate = false, at = ctx.currentTime) {
   const m = MODES[params.mode] ?? MODES.normal;
-  const t = ctx.currentTime;
+  const t = at;
   const set = (param, v) => immediate ? param.setValueAtTime(v, t) : param.setTargetAtTime(v, t, RAMP);
 
   set(nodes.highpass.frequency, m.hp);

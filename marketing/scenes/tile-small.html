@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="440x280 out/store/tile-small.png" />
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>
+    body { width: 440px; height: 280px; }
+    .txt { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); }
+    .ey { font-weight: 700; font-stretch: 118%; font-size: calc(38px * 0.24); letter-spacing: 0.2em; text-transform: uppercase; color: var(--silk); margin-bottom: calc(38px * 0.3); }
+    h1 { font-size: 34px; }
+    .dev { position: absolute; right: 6px; top: 50%; transform: translateY(-50%) scale(0.8); transform-origin: right center; }
+    .dev .knobwrap { margin: 0; height: 220px; }
+  </style>
+</head>
+<body>
+  <div class="txt">
+    <div class="ey">Volume Booster</div>
+    <h1>This one<br />goes to <em>600</em>.</h1>
+  </div>
+  <div class="dev"><div class="knobwrap"><svg viewBox="0 0 220 220" id="ring"></svg><div class="knob" id="knob"><div class="grip" id="grip"></div></div></div></div>
+  <script src="/shared/hifi.js"></script>
+  <script>
+    mountKnob({ ring: document.getElementById('ring'), knob: document.getElementById('knob'), grip: document.getElementById('grip'), onInput() {} }).render(520);
+    window.sceneReady = Promise.resolve();
+  </script>
+</body>
+</html>

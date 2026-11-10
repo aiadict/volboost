@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="render" content="1280x800 out/store/screenshot-3-modes.png" />
+  <link rel="stylesheet" href="/shared/tokens.css" />
+  <link rel="stylesheet" href="/shared/hifi.css" />
+  <link rel="stylesheet" href="kit.css" />
+  <style>
+    body { width: 1280px; height: 800px; }
+    .modes { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+    .mode { display: flex; align-items: center; gap: 16px; font-size: 19px; color: var(--silk); }
+    .mode .key { width: 96px; height: 40px; padding-top: 8px; flex: none; }
+  </style>
+</head>
+<body>
+  <div class="copy">
+    <p class="eyebrow">Voice · Bass · Night</p>
+    <h1>Hear <em>every</em> word.</h1>
+    <div class="modes">
+      <div class="mode"><span class="key" role="presentation" aria-checked="true" style="display:grid;place-items:center">Voice</span>Mumbled dialogue and quiet calls</div>
+      <div class="mode"><span class="key" style="display:grid;place-items:center">Bass</span>Small laptop speakers</div>
+      <div class="mode"><span class="key" style="display:grid;place-items:center">Night</span>Evens out loud scenes</div>
+    </div>
+  </div>
+  <div class="win" id="win" style="left: 600px; top: 56px; width: 620px; height: 700px;"></div>
+  <iframe class="popup-frame" id="pop" style="right: 82px; top: 138px; transform: scale(1.18);"></iframe>
+  <script src="kit.js"></script>
+  <script>
+    document.getElementById('win').innerHTML = Kit.browser({ badge: '300', tab: 'The quiet film', caption: '…and that’s when she finally said it.' });
+    window.sceneReady = Kit.popup(document.getElementById('pop')).then(p => p.set({ pct: 300, mode: 'voice', level: 0.66, t: 0.4 }));
+  </script>
+</body>
+</html>
